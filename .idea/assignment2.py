@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-#-*- Coding: utf-8 -*-
+# -*- Coding: utf-8 -*-
 
 """
 IS 211 Assignment 2
 """
 
 import os
+import sys
 import csv
 import urllib2
 import datetime
@@ -49,7 +50,7 @@ def processdata(datafile):
                 id = row['id']
                 name = row['name']
                 day, month, year = row['birthday'].split('/')
-                bdate = datetime.date(int(year),int(month), int(day))
+                bdate = datetime.date(int(year), int(month), int(day))
                 bday = datetime.datetime.combine(bdate, datetime.time())
                 mydb[id] = (name, bday)
             except ValueError:
@@ -67,39 +68,43 @@ def displayperson(id, data):
     :return (string): notify matched entry or no match
     """
     msg = ''
-
     try:
         idx = str(id)
         name = data[idx][0]
-        bday = data[idx].[1].strftime('Y-m-d')
-        msg = 'Person #{} is {} with a birthday of {}'.format(idx, name, bday)
+        bday = data[idx][1].strftime('%Y-%m-%d')
+        return 'Person #{} is {} with a birthday of {}'.format(idx, name, bday)
     except KeyError:
-        msg = 'No user found wiht that id'
-    return msg
+        return 'No user found with that id'
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--url', required=True, type=str)
+args = parser.parse_args()
+if args.url:
+    URL = args.url
+    print URL
+logging.basicConfig(filename='errors.log', level=logging.ERROR)
+mainlog = logging.getLogger('assignment2::main')
+try:
+    DATAFILE = downloadfile(URL)
+    if not DATAFILE:
+        raise InvalidUrlException()
+    CSVFILE = os.path.basename(URL)
+    with open(CSVFILE, 'w') as outfile:
+        outfile.write(DATAFILE)
+    PERSONDATA = processdata(CSVFILE)
+    print 'There are ', len(PERSONDATA), ' entries.'
+    RESP = raw_input('Enter a person ID: ')
+    while int(RESP) > 0:
+        ID = int(RESP)
+        print displayperson(ID, PERSONDATA)
+        RESP = raw_input('Find another birthday (y/n):')
+        if str(RESP).lower() != 'y' or str(RESP).lower() == 'n':
+            break
+        RESP = raw_input('Enter a person ID: ')
 
+except InvalidUrlException:
+    print 'Invalid URL, could not download the data file.'
 
-if __name__ == '__main__':
-    import sys
-
-    URL = 'https://s3.amazonaws.com/cuny-is211-spring2015/birthdays100.csv'
-    # sys.argv.append('--url ' + URL)
-    parser = argparse.ArgumentParser()
-    # parser.add_argument('--url', required=True, type=str)
-    args = parser.parse_args()
-    logging.basicConfig(filename='errors.log', level=logging.ERROR)
-    try:
-        DATAFILE = downloadfile(URL)
-        if not DATAFILE:
-            raise InvalidUrlException()
-        CSVFILE = os.path.basename(URL)
-        with open(CSVFILE, 'w') as outfile:
-            outfile.write(DATAFILE)
-        DATABASE = processdata(CSVFILE)
-        print DATABASE
-        print 'There are ', len(DATABASE), ' entries.'
-    except InvalidUrlException:
-        print 'Invalid URL, could not download the data file.'
-    except IOError:
-        print 'Could not open ' + CSVFILE
+except IOError:
+    print 'Could not open ' + CSVFILE

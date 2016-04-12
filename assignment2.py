@@ -6,7 +6,6 @@ IS 211 Assignment 2
 """
 
 import os
-import sys
 import csv
 import urllib2
 import datetime
@@ -21,7 +20,7 @@ def downloadfile(url):
     :return:
         Data fetched from URL
     :examples:
-        >>> downloadfile('http://www.google.com')
+    downloadfile('http://www.google.com')
     """
     data = urllib2.urlopen(urllib2.Request(url)).read()
     return data
@@ -33,11 +32,11 @@ def processdata(datafile):
     :param datafile: csv.DictReader
     :return: dict
     :examples:
-        >>>processdata(csvfile)
-        {'24': ('Stewart Bond', datetime.datetime(2008, 2, 15, 0, 0)),
-         '25': ('Colin Turner', datetime.datetime(1994, 6, 6, 0, 0)),
-         '26': ('Pippa Glover', datetime.datetime(2001, 8, 15, 0, 0)),
-         '20': ('Jack Poole', datetime.datetime(1997, 8, 3, 0, 0))}
+    processdata(csvfile)
+    {'24': ('Stewart Bond', datetime.datetime(2008, 2, 15, 0, 0)),
+     '25': ('Colin Turner', datetime.datetime(1994, 6, 6, 0, 0)),
+     '26': ('Pippa Glover', datetime.datetime(2001, 8, 15, 0, 0)),
+     '20': ('Jack Poole', datetime.datetime(1997, 8, 3, 0, 0))}
     """
     pdlogger = logging.getLogger('assignment2::processdata')
     mydb = {}
@@ -63,11 +62,11 @@ def processdata(datafile):
 def displayperson(id, data):
     """
     Find entry with 'id' index from 'data'
-    :param id (int): ID to find
-    :param data (dict): dataset to search
+    :param id: (int) ID to find
+    :param data: (dict) dataset to search
     :return (string): notify matched entry or no match
     """
-    msg = ''
+
     try:
         idx = str(id)
         name = data[idx][0]
@@ -80,6 +79,8 @@ def displayperson(id, data):
 parser = argparse.ArgumentParser()
 parser.add_argument('--url', required=True, type=str)
 args = parser.parse_args()
+URL = None
+CSVFILE = None
 if args.url:
     URL = args.url
     print URL
@@ -87,8 +88,7 @@ logging.basicConfig(filename='errors.log', level=logging.ERROR)
 mainlog = logging.getLogger('assignment2::main')
 try:
     DATAFILE = downloadfile(URL)
-    if not DATAFILE:
-        raise InvalidUrlException()
+    print 'data => ', DATAFILE
     CSVFILE = os.path.basename(URL)
     with open(CSVFILE, 'w') as outfile:
         outfile.write(DATAFILE)
@@ -103,8 +103,6 @@ try:
             break
         RESP = raw_input('Enter a person ID: ')
 
-except InvalidUrlException:
-    print 'Invalid URL, could not download the data file.'
-
 except IOError:
     print 'Could not open ' + CSVFILE
+
